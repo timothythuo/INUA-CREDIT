@@ -1,109 +1,178 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>INUA CREDIT - Login</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-body { font-family: Arial; margin:0; background:#f5f7fb; }
-header { background:#1e40af; color:white; text-align:center; padding:20px; }
-.container { max-width:400px; margin:auto; background:white; padding:20px; margin-top:20px; border-radius:10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-input, select { width:100%; padding:12px; margin:10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-button { width:100%; padding:12px; background:#1e40af; color:white; border:none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-.hidden { display: none; }
-#status-card { margin-top: 20px; padding: 15px; border-radius: 5px; text-align: center; font-weight: bold; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INUA CREDIT | Professional Digital Lending</title>
+    <style>
+        :root { --primary: #1e40af; --success: #166534; --error: #991b1b; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin:0; background:#f0f2f5; color: #333; }
+        header { background: var(--primary); color:white; text-align:center; padding:30px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .container { max-width:450px; margin: 20px auto; background:white; padding:30px; border-radius:12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 5px; color: #4b5563; }
+        input, select { width:100%; padding:12px; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        
+        button { width:100%; padding:14px; background: var(--primary); color:white; border:none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; transition: opacity 0.2s; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .hidden { display: none; }
+        #status-card { margin-top: 20px; padding: 20px; border-radius: 8px; text-align: center; display: none; animation: fadeIn 0.5s; }
+        .interest-note { font-size: 13px; color: #6b7280; margin-top: 10px; text-align: center; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 </head>
 <body>
 
 <header>
-<h2>INUA CREDIT</h2>
-<p>Fast Digital Loans in Kenya</p>
+    <h1>INUA CREDIT</h1>
+    <p>Financial Empowerment at Your Fingertips</p>
 </header>
 
 <div id="login-section" class="container">
-    <h3>Access Your Account</h3>
-    <input id="user-phone" type="tel" placeholder="Phone Number (e.g. 07...)">
-    <input id="user-pin" type="password" placeholder="Enter 4-Digit PIN">
-    <button onclick="handleLogin()">Login</button>
-    <p id="login-error" style="color:red; font-size:12px;"></p>
+    <h3>Secure Login</h3>
+    <div class="input-group">
+        <label>M-Pesa Registered Number</label>
+        <input id="user-phone" type="tel" placeholder="0712345678" maxlength="10">
+    </div>
+    <div class="input-group">
+        <label>4-Digit Security PIN</label>
+        <input id="user-pin" type="password" placeholder="••••" maxlength="4">
+    </div>
+    <button id="login-btn" onclick="handleLogin()">Unlock Account</button>
+    <p id="login-error" style="color:var(--error); font-size:13px; text-align:center; margin-top:10px;"></p>
 </div>
 
 <div id="app-section" class="container hidden">
-    <h3>Welcome Back!</h3>
-    <p>Apply for a new loan below:</p>
-    
-    <select id="amount">
-        <option value="500">500 KES</option>
-        <option value="1000">1000 KES</option>
-        <option value="5000">5000 KES</option>
-    </select>
+    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3 style="margin:0;">Apply for Loan</h3>
+        <button onclick="logout()" style="width:auto; padding:5px 12px; background:#e5e7eb; color:#374151; font-size:12px;">Logout</button>
+    </div>
 
-    <select id="income">
-        <option value="low">Low Income</option>
-        <option value="medium">Medium Income</option>
-        <option value="high">High Income</option>
-    </select>
+    <div class="input-group">
+        <label>Amount (KES)</label>
+        <select id="amount" onchange="updateSummary()">
+            <option value="1000">1,000</option>
+            <option value="2500">2,500</option>
+            <option value="5000">5,000</option>
+            <option value="10000">10,000</option>
+        </select>
+    </div>
 
-    <button onclick="applyLoan()">Apply Now</button>
-    <div id="status-card"></div>
+    <div class="input-group">
+        <label>Monthly Income Range</label>
+        <select id="income">
+            <option value="15000">Below 20k</option>
+            <option value="45000">20k - 50k</option>
+            <option value="100000">Above 50k</option>
+        </select>
+    </div>
+
+    <div id="loan-summary" class="interest-note">
+        Total to repay: <strong>KES 1,120</strong> (12% Interest)
+    </div>
+
     <br>
-    <button onclick="logout()" style="background:#6b7280;">Logout</button>
+    <button id="apply-btn" onclick="applyLoan()">Request Disbursement</button>
+    
+    <div id="status-card"></div>
 </div>
 
 <script>
-// 1. Simple Login Logic
+// SIMULATED AUTH (In reality, this would be an API call to a server)
+const MOCK_USER = { phone: "0700000000", pin: "1234" };
+
 function handleLogin() {
     const phone = document.getElementById('user-phone').value;
     const pin = document.getElementById('user-pin').value;
+    const btn = document.getElementById('login-btn');
 
-    if (phone.length >= 10 && pin === "1234") {
-        // Save login state to browser memory
-        localStorage.setItem("isLoggedIn", "true");
-        showApp();
-    } else {
-        document.getElementById('login-error').innerText = "Invalid Phone or PIN (Hint: Try 1234)";
+    if (!/^0(7|1)\d{8}$/.test(phone)) {
+        showError("Please enter a valid Kenyan phone number.");
+        return;
     }
+
+    btn.innerText = "Authenticating...";
+    btn.disabled = true;
+
+    // Simulate network delay
+    setTimeout(() => {
+        if (pin === MOCK_USER.pin) {
+            localStorage.setItem("isLoggedIn", "true");
+            localStorage.setItem("userPhone", phone);
+            showApp();
+        } else {
+            showError("Incorrect PIN. Please try again.");
+            btn.innerText = "Unlock Account";
+            btn.disabled = false;
+        }
+    }, 1500);
 }
 
-// 2. Loan Logic (Local)
-function applyLoan() {
+function updateSummary() {
     const amount = parseInt(document.getElementById("amount").value);
-    const income = document.getElementById("income").value;
-    const statusCard = document.getElementById("status-card");
-
-    let score = 50;
-    if (income === "high") score += 30;
-    if (income === "low") score -= 10;
-    
-    if (score >= 60) {
-        statusCard.innerText = "✅ LOAN APPROVED!";
-        statusCard.style.backgroundColor = "#dcfce7";
-        statusCard.style.color = "#166534";
-    } else {
-        statusCard.innerText = "❌ DECLINED: Low Credit Score";
-        statusCard.style.backgroundColor = "#fee2e2";
-        statusCard.style.color = "#991b1b";
-    }
+    const total = Math.round(amount * 1.12);
+    document.getElementById("loan-summary").innerHTML = `Total to repay: <strong>KES ${total.toLocaleString()}</strong> (12% Interest)`;
 }
 
-// 3. Page Navigation
+function applyLoan() {
+    const btn = document.getElementById("apply-btn");
+    const statusCard = document.getElementById("status-card");
+    const income = parseInt(document.getElementById("income").value);
+    const amount = parseInt(document.getElementById("amount").value);
+
+    btn.disabled = true;
+    btn.innerText = "Evaluating Credit Limit...";
+    statusCard.style.display = "none";
+
+    // Simulate Credit Scoring Algorithm
+    setTimeout(() => {
+        const isApproved = (income * 0.3) > (amount / 2); // Rule: Monthly repayment shouldn't exceed 30% of income
+
+        if (isApproved) {
+            statusCard.innerHTML = `
+                <div style="font-size: 24px;">✅</div>
+                <div style="font-size: 18px; margin-bottom:10px;">LOAN APPROVED</div>
+                <div style="font-size: 14px; font-weight: normal;">KES ${amount.toLocaleString()} is being sent to M-Pesa.</div>
+            `;
+            statusCard.style.backgroundColor = "#dcfce7";
+            statusCard.style.color = var(--success);
+        } else {
+            statusCard.innerHTML = `
+                <div style="font-size: 24px;">❌</div>
+                <div style="font-size: 18px; margin-bottom:10px;">LIMIT EXCEEDED</div>
+                <div style="font-size: 14px; font-weight: normal;">Based on your income, please try a smaller amount.</div>
+            `;
+            statusCard.style.backgroundColor = "#fee2e2";
+            statusCard.style.color = var(--error);
+        }
+        statusCard.style.display = "block";
+        btn.innerText = "Request Disbursement";
+        btn.disabled = false;
+    }, 2000);
+}
+
+function showError(msg) {
+    document.getElementById('login-error').innerText = msg;
+}
+
 function showApp() {
     document.getElementById('login-section').classList.add('hidden');
     document.getElementById('app-section').classList.remove('hidden');
+    updateSummary();
 }
 
 function logout() {
-    localStorage.removeItem("isLoggedIn");
-    location.reload(); // Refresh the page to show login
+    localStorage.clear();
+    location.reload();
 }
 
-// Check if user is already logged in when they open the page
-window.onload = function() {
-    if (localStorage.getItem("isLoggedIn") === "true") {
-        showApp();
-    }
+window.onload = () => {
+    if (localStorage.getItem("isLoggedIn") === "true") showApp();
 }
 </script>
-
 </body>
 </html>
+
