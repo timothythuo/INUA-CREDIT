@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>INUA CREDIT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body { font-family: Arial; margin:0; background:#f5f7fb; }
+header { background:#1e40af; color:white; text-align:center; padding:20px; }
+.container { max-width:500px; margin:auto; background:white; padding:20px; margin-top:20px; border-radius:10px; }
+input, select { width:100%; padding:10px; margin:10px 0; }
+button { width:100%; padding:12px; background:#1e40af; color:white; border:none; }
+</style>
+</head>
+<body>
+
+<header>
+<h2>INUA CREDIT</h2>
+<p>Fast Digital Loans in Kenya</p>
+</header>
+
+<div class="container">
+<h3>Apply for Loan</h3>
+
+<input id="name" placeholder="Full Name">
+<input id="phone" placeholder="Phone Number">
+
+<select id="amount">
+<option>500</option>
+<option>1000</option>
+<option>2000</option>
+<option>5000</option>
+</select>
+
+<select id="income">
+<option value="low">Low Income</option>
+<option value="medium">Medium Income</option>
+<option value="high">High Income</option>
+</select>
+
+<button onclick="applyLoan()">Apply</button>
+<p id="msg"></p>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "YOUR_KEY",
+  authDomain: "YOUR_APP.firebaseapp.com",
+  databaseURL: "https://YOUR_APP.firebaseio.com",
+  projectId: "YOUR_APP"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+function scoreLoan(income, amount) {
+  let score = 50;
+
+  if (income === "high") score += 30;
+  if (income === "medium") score += 15;
+  if (income === "low") score -= 10;
+
+  if (amount <= 1000) score += 10;
+  if (amount > 5000) score -= 20;
+
+  return score;
+}
+
+window.applyLoan = function () {
+  let name = document.getElementById("name").value;
+  let phone = document.getElementById("phone").value;
+  let amount = parseInt(document.getElementById("amount").value);
+  let income = document.getElementById("income").value;
+
+  let score = scoreLoan(income, amount);
+
+  push(ref(db, "loans"), {
+    name,
+    phone,
+    amount,
+    income,
+    score,
+    status: "pending"
+  });
+
+  document.getElementById("msg").innerText =
+    "Application submitted to INUA CREDIT";
+};
+</script>
+
+</body>
+</html>
