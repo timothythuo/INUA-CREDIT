@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>INUA CREDIT</title>
+<title>INUA CREDIT - Login</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body { font-family: Arial; margin:0; background:#f5f7fb; }
 header { background:#1e40af; color:white; text-align:center; padding:20px; }
-.container { max-width:500px; margin:auto; background:white; padding:20px; margin-top:20px; border-radius:10px; }
-input, select { width:100%; padding:10px; margin:10px 0; }
-button { width:100%; padding:12px; background:#1e40af; color:white; border:none; }
+.container { max-width:400px; margin:auto; background:white; padding:20px; margin-top:20px; border-radius:10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+input, select { width:100%; padding:12px; margin:10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+button { width:100%; padding:12px; background:#1e40af; color:white; border:none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+.hidden { display: none; }
+#status-card { margin-top: 20px; padding: 15px; border-radius: 5px; text-align: center; font-weight: bold; }
 </style>
 </head>
 <body>
@@ -18,76 +20,89 @@ button { width:100%; padding:12px; background:#1e40af; color:white; border:none;
 <p>Fast Digital Loans in Kenya</p>
 </header>
 
-<div class="container">
-<h3>Apply for Loan</h3>
-
-<input id="name" placeholder="Full Name">
-<input id="phone" placeholder="Phone Number">
-
-<select id="amount">
-<option>500</option>
-<option>1000</option>
-<option>2000</option>
-<option>5000</option>
-</select>
-
-<select id="income">
-<option value="low">Low Income</option>
-<option value="medium">Medium Income</option>
-<option value="high">High Income</option>
-</select>
-
-<button onclick="applyLoan()">Apply</button>
-<p id="msg"></p>
+<div id="login-section" class="container">
+    <h3>Access Your Account</h3>
+    <input id="user-phone" type="tel" placeholder="Phone Number (e.g. 07...)">
+    <input id="user-pin" type="password" placeholder="Enter 4-Digit PIN">
+    <button onclick="handleLogin()">Login</button>
+    <p id="login-error" style="color:red; font-size:12px;"></p>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+<div id="app-section" class="container hidden">
+    <h3>Welcome Back!</h3>
+    <p>Apply for a new loan below:</p>
+    
+    <select id="amount">
+        <option value="500">500 KES</option>
+        <option value="1000">1000 KES</option>
+        <option value="5000">5000 KES</option>
+    </select>
 
-const firebaseConfig = {
-  apiKey: "YOUR_KEY",
-  authDomain: "YOUR_APP.firebaseapp.com",
-  databaseURL: "https://YOUR_APP.firebaseio.com",
-  projectId: "YOUR_APP"
-};
+    <select id="income">
+        <option value="low">Low Income</option>
+        <option value="medium">Medium Income</option>
+        <option value="high">High Income</option>
+    </select>
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+    <button onclick="applyLoan()">Apply Now</button>
+    <div id="status-card"></div>
+    <br>
+    <button onclick="logout()" style="background:#6b7280;">Logout</button>
+</div>
 
-function scoreLoan(income, amount) {
-  let score = 50;
+<script>
+// 1. Simple Login Logic
+function handleLogin() {
+    const phone = document.getElementById('user-phone').value;
+    const pin = document.getElementById('user-pin').value;
 
-  if (income === "high") score += 30;
-  if (income === "medium") score += 15;
-  if (income === "low") score -= 10;
-
-  if (amount <= 1000) score += 10;
-  if (amount > 5000) score -= 20;
-
-  return score;
+    if (phone.length >= 10 && pin === "1234") {
+        // Save login state to browser memory
+        localStorage.setItem("isLoggedIn", "true");
+        showApp();
+    } else {
+        document.getElementById('login-error').innerText = "Invalid Phone or PIN (Hint: Try 1234)";
+    }
 }
 
-window.applyLoan = function () {
-  let name = document.getElementById("name").value;
-  let phone = document.getElementById("phone").value;
-  let amount = parseInt(document.getElementById("amount").value);
-  let income = document.getElementById("income").value;
+// 2. Loan Logic (Local)
+function applyLoan() {
+    const amount = parseInt(document.getElementById("amount").value);
+    const income = document.getElementById("income").value;
+    const statusCard = document.getElementById("status-card");
 
-  let score = scoreLoan(income, amount);
+    let score = 50;
+    if (income === "high") score += 30;
+    if (income === "low") score -= 10;
+    
+    if (score >= 60) {
+        statusCard.innerText = "✅ LOAN APPROVED!";
+        statusCard.style.backgroundColor = "#dcfce7";
+        statusCard.style.color = "#166534";
+    } else {
+        statusCard.innerText = "❌ DECLINED: Low Credit Score";
+        statusCard.style.backgroundColor = "#fee2e2";
+        statusCard.style.color = "#991b1b";
+    }
+}
 
-  push(ref(db, "loans"), {
-    name,
-    phone,
-    amount,
-    income,
-    score,
-    status: "pending"
-  });
+// 3. Page Navigation
+function showApp() {
+    document.getElementById('login-section').classList.add('hidden');
+    document.getElementById('app-section').classList.remove('hidden');
+}
 
-  document.getElementById("msg").innerText =
-    "Application submitted to INUA CREDIT";
-};
+function logout() {
+    localStorage.removeItem("isLoggedIn");
+    location.reload(); // Refresh the page to show login
+}
+
+// Check if user is already logged in when they open the page
+window.onload = function() {
+    if (localStorage.getItem("isLoggedIn") === "true") {
+        showApp();
+    }
+}
 </script>
 
 </body>
